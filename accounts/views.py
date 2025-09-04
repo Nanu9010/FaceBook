@@ -129,8 +129,10 @@ def edit_profile_view(request):
 
 @login_required
 def logout_page(request):
+    user_id = request.user.id  # save it before logout
     logout(request)
-    return redirect('accounts:login',user_id=request.user.id)
+    return redirect('accounts:login', user_id=user_id)
+
 
 
 @login_required

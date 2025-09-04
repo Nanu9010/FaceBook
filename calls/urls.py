@@ -1,9 +1,8 @@
 from django.urls import path
-#call/urls.py
 from . import views
 
+app_name = "calls"
+
 urlpatterns = [
-
-    path("video-call/", views.video_call, name="video_call"),
-
-    ]
+    path("video/<int:receiver_id>/", views.video_call, name="video_call"),
+]

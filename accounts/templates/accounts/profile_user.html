@@ -546,8 +546,9 @@ class VideoCallManager {
     }
 
     initGlobalWebSocket() {
-        // Initialize WebSocket for receiving calls
-        this.ws = new WebSocket(`ws://${window.location.host}/ws/calls/call/{{ request.user.id }}/{{ profile_user.id }}/`);
+
+        const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+        this.ws = new WebSocket(`${wsScheme}://${window.location.host}/ws/calls/call/{{ request.user.id }}/{{ profile_user.id }}/`);
 
         this.ws.onopen = () => {
             console.log('WebSocket connected');
@@ -595,13 +596,12 @@ class VideoCallManager {
         }
     }
 
-    async handleIncomingCall(offer) {
-        this.elements.callerName.textContent = "{{ profile_user.username }}";
-        this.elements.incomingModal.style.display = "block";
-
-        // Store the offer for when user accepts
+    async handleIncomingCall(offer, callerName) {
+        this.elements.callerName.textContent = callerName;
         this.pendingOffer = offer;
+        this.elements.incomingModal.style.display = "block";
     }
+
 
     async acceptCall() {
         this.elements.incomingModal.style.display = "none";
@@ -629,6 +629,7 @@ class VideoCallManager {
     }
 
     async initiateCall() {
+    console.log('📹 initiateCall clicked');
         if (this.isCallActive) return;
 
         this.elements.videoModal.style.display = "block";
@@ -641,7 +642,11 @@ class VideoCallManager {
             const offer = await this.peerConnection.createOffer();
             await this.peerConnection.setLocalDescription(offer);
 
-            this.sendWebSocketMessage({ offer });
+           this.sendWebSocketMessage({
+                offer: { type: offer.type, sdp: offer.sdp },
+                caller_name: "{{ request.user.username }}"
+            });
+
         } catch (error) {
             console.error('Error initiating call:', error);
             this.updateCallStatus('Failed to start call');
@@ -649,51 +654,65 @@ class VideoCallManager {
         }
     }
 
-    async setupMediaAndPeerConnection() {
-        // Get user media
-        this.localStream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
-        });
-
-        this.elements.localVideo.srcObject = this.localStream;
-
-        // Create peer connection
-        this.peerConnection = new RTCPeerConnection(this.config);
-
-        // Add local stream tracks
-        this.localStream.getTracks().forEach(track => {
-            this.peerConnection.addTrack(track, this.localStream);
-        });
-
-        // Handle remote stream
-        this.peerConnection.ontrack = (event) => {
-            this.elements.remoteVideo.srcObject = event.streams[0];
-            this.updateCallStatus('Connected');
-        };
-
-        // Handle ICE candidates
-        this.peerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-                this.sendWebSocketMessage({ candidate: event.candidate });
+        async setupMediaAndPeerConnection() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Camera and microphone access not supported or requires HTTPS.");
+                this.updateCallStatus("Cannot access camera/microphone");
+                throw new Error("MediaDevices API not available");
             }
-        };
 
-        // Handle connection state changes
-        this.peerConnection.onconnectionstatechange = () => {
-            const state = this.peerConnection.connectionState;
-            console.log('Connection state:', state);
+            try {
+                this.localStream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true
+                });
 
-            if (state === 'connected') {
-                this.updateCallStatus('Connected');
-            } else if (state === 'disconnected') {
-                this.updateCallStatus('Disconnected');
-            } else if (state === 'failed') {
-                this.updateCallStatus('Connection failed');
-                this.endCall();
+                if (!this.localStream) {
+                    throw new Error("Failed to get local media stream");
+                }
+
+                this.elements.localVideo.srcObject = this.localStream;
+
+                // Create peer connection
+                this.peerConnection = new RTCPeerConnection(this.config);
+
+                // Add local tracks safely
+                this.localStream.getTracks().forEach(track => {
+                    this.peerConnection.addTrack(track, this.localStream);
+                });
+
+                this.peerConnection.ontrack = (event) => {
+                    this.elements.remoteVideo.srcObject = event.streams[0];
+                    this.updateCallStatus('Connected');
+                };
+
+                this.peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        this.sendWebSocketMessage({ candidate: event.candidate });
+                    }
+                };
+
+                this.peerConnection.onconnectionstatechange = () => {
+                    const state = this.peerConnection.connectionState;
+                    console.log('Connection state:', state);
+
+                    if (state === 'connected') {
+                        this.updateCallStatus('Connected');
+                    } else if (state === 'disconnected') {
+                        this.updateCallStatus('Disconnected');
+                    } else if (state === 'failed') {
+                        this.updateCallStatus('Connection failed');
+                        this.endCall();
+                    }
+                };
+
+            } catch (err) {
+                console.error("Error accessing media devices:", err);
+                this.updateCallStatus("Failed to access camera/microphone");
+                throw err; // Stop the call initiation
             }
-        };
-    }
+        }
+
 
     toggleMute() {
         if (this.localStream) {

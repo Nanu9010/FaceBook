@@ -28,7 +28,8 @@ SECRET_KEY = 'django-insecure-w5a(*v6m6pg8b!6c-$b3d0g5-acqsg7te@e7h*s0sq=tj^kp6&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['192.168.1.30', 'localhost', '127.0.0.1']
+
 
 CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
@@ -151,8 +152,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
-# STATICFILES_DIRS = (os.path.join(BASE_DIR,'static'),)
+STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+STATICFILES_DIRS = (os.path.join(BASE_DIR,'static'),)
 import os
 
 # Media files (user uploads)
