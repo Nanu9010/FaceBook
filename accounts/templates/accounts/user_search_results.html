@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+{% load static %}
+<div class="container">
+    <h2 class="feed-title">Search Results for "{{ query }}"</h2>
+
+    {% if results %}
+        <div class="user-results-grid">
+            {% for user in results %}
+                <div class="user-card">
+                    <div class="user-pic">
+                        {% if user.profile_pic %}
+                            <img src="{{ user.profile_pic.url }}" alt="{{ user.username }}">
+                        {% else %}
+                            <img src="{% static 'default_profile.png' %}" alt="Default profile">
+                        {% endif %}
+                    </div>
+                    <div class="user-info">
+                        <a href="{% url 'accounts:profile' user.id %}"><strong>{{ user.username }}</strong></a>
+                        <p>{{ user.bio|default:"No bio yet." }}</p>
+                        {% if user != request.user %}
+                            {% if user in request.user.following.all %}
+                                <a href="{% url 'accounts:unfollow_user' user.id %}" class="btn-follow btn-unfollow">Unfollow</a>
+                            {% else %}
+                                <a href="{% url 'accounts:follow_user' user.id %}" class="btn-follow btn-following">Follow</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No users found for "{{ query }}"</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.container { max-width: 800px; margin: auto; padding: 20px; }
+.feed-title { margin-bottom: 20px; font-size: 1.5rem; font-weight: bold; }
+
+/* User Grid */
+.user-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+.user-card { display: flex; gap: 10px; padding: 10px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); align-items: center; }
+.user-pic { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; background: #ddd; }
+.user-pic img { width: 100%; height: 100%; object-fit: cover; }
+.user-info { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.user-info a { text-decoration: none; color: black; font-weight: bold; }
+.user-info p { margin: 0; font-size: 0.9rem; color: gray; }
+.btn-follow { display: inline-block; padding: 5px 12px; border-radius: 20px; text-decoration: none; font-size: 0.8rem; font-weight: bold; text-align: center; }
+.btn-following { background: #0095f6; color: white; }
+.btn-unfollow { background: #efefef; color: #333; }
+</style>
+{% endblock %}

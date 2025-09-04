@@ -1,0 +1,125 @@
+<!--{% extends 'core/base.html' %}-->
+
+<!--{% block title %}My Profile{% endblock %}-->
+
+<!--{% block content %}-->
+<!--<div class="profile-container">-->
+<!--    <div class="profile-header">-->
+<!--        <div class="profile-pic"></div>-->
+<!--        <div class="profile-info">-->
+<!--            <h2>{{ request.user.username }}</h2>-->
+<!--            <p>{{ request.user.bio|default:"No bio yet." }}</p>-->
+
+<!--            <div class="profile-stats">-->
+<!--                <span><strong>{{ user_posts.count }}</strong> Posts</span>-->
+<!--                <span><strong>{{ followers_count }}</strong> Followers</span>-->
+<!--                <span><strong>{{ following_count }}</strong> Following</span>-->
+<!--                {% if profile_user != request.user %}-->
+<!--    {% if is_following %}-->
+<!--        <a href="{% url 'unfollow_user' profile_user.id %}" class="btn-follow btn-unfollow">Unfollow</a>-->
+<!--    {% else %}-->
+<!--        <a href="{% url 'follow_user' profile_user.id %}" class="btn-follow btn-following">Follow</a>-->
+<!--    {% endif %}-->
+<!--{% endif %}-->
+
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <h3 class="section-title">My Posts</h3>-->
+<!--    <div class="posts-grid">-->
+<!--        {% for post in user_posts %}-->
+<!--            <div class="post-card">-->
+<!--                {% if post.image %}-->
+<!--                    <img src="{{ post.image.url }}" alt="Post image">-->
+<!--                {% else %}-->
+<!--                    <p>{{ post.content|truncatechars:50 }}</p>-->
+<!--                {% endif %}-->
+<!--            </div>-->
+<!--        {% empty %}-->
+<!--            <p class="no-posts">You haven’t posted anything yet. <a href="{% url 'create_post' %}">Create one</a></p>-->
+<!--        {% endfor %}-->
+<!--    </div>-->
+<!--</div>-->
+<!--{% endblock %}-->
+
+<!--{% block extra_css %}-->
+<!--<style>-->
+<!--    .profile-container {-->
+<!--        max-width: 900px;-->
+<!--        margin: auto;-->
+<!--        padding: 20px;-->
+<!--    }-->
+
+<!--    .profile-header {-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        margin-bottom: 20px;-->
+<!--    }-->
+
+<!--    .profile-pic {-->
+<!--        width: 100px;-->
+<!--        height: 100px;-->
+<!--        border-radius: 50%;-->
+<!--        background: #ddd;-->
+<!--        margin-right: 20px;-->
+<!--    }-->
+
+<!--    .profile-info h2 {-->
+<!--        margin: 0;-->
+<!--        font-size: 1.5rem;-->
+<!--    }-->
+
+<!--    .profile-info p {-->
+<!--        color: gray;-->
+<!--        font-size: 14px;-->
+<!--        margin: 5px 0;-->
+<!--    }-->
+
+<!--    .profile-stats {-->
+<!--        display: flex;-->
+<!--        gap: 15px;-->
+<!--        margin-top: 8px;-->
+<!--        font-size: 14px;-->
+<!--    }-->
+
+<!--    .profile-stats span {-->
+<!--        font-weight: 500;-->
+<!--    }-->
+
+<!--    .section-title {-->
+<!--        margin: 20px 0 10px;-->
+<!--        font-size: 1.2rem;-->
+<!--        font-weight: bold;-->
+<!--    }-->
+
+<!--    .posts-grid {-->
+<!--        display: grid;-->
+<!--        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));-->
+<!--        gap: 10px;-->
+<!--    }-->
+
+<!--    .post-card {-->
+<!--        background: #fff;-->
+<!--        border-radius: 8px;-->
+<!--        overflow: hidden;-->
+<!--        box-shadow: 0 2px 6px rgba(0,0,0,0.1);-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        justify-content: center;-->
+<!--        height: 250px;-->
+<!--    }-->
+
+<!--    .post-card img {-->
+<!--        width: 100%;-->
+<!--        height: 100%;-->
+<!--        object-fit: cover;-->
+<!--    }-->
+
+<!--    .no-posts {-->
+<!--        text-align: center;-->
+<!--        color: gray;-->
+<!--        margin-top: 20px;-->
+<!--    }-->
+<!--</style>-->
+<!--{% endblock %}-->

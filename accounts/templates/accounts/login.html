@@ -1,0 +1,14 @@
+{% extends 'core/base.html' %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>Login</h2>
+    <form method="POST" class="auth-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Login</button>
+    </form>
+    <p class="auth-footer">Don’t have an account? <a href="{% url 'accounts:signup' %}" class="link">Signup</a></p>
+</div>
+{% endblock %}

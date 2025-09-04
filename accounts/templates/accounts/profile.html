@@ -1,0 +1,20 @@
+{% extends 'core/base.html' %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="profile-container">
+    <h2>Your Profile</h2>
+    <div class="profile-card">
+
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        {% if user.phone_number %}<p><strong>Phone:</strong> {{ user.phone_number }}</p>{% endif %}
+        {% if user.bio %}<p><strong>Bio:</strong> {{ user.bio }}</p>{% endif %}
+        {% if user.birthdate %}<p><strong>Birthdate:</strong> {{ user.birthdate }}</p>{% endif %}
+        {% if user.gender %}<p><strong>Gender:</strong> {{ user.gender }}</p>{% endif %}
+    </div>
+    <div class="profile-actions">
+        <a href="{% url 'profile_edit' %}" class="btn">Edit Profile</a>
+        <a href="{% url 'logout' %}" class="btn logout-btn">Logout</a>
+    </div>
+</div>
+{% endblock %}

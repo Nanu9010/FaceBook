@@ -1,0 +1,36 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>Create Account</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="error-text">
+                        {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn">Signup</button>
+    </form>
+    <p>Already have an account? <a href="{% url 'accounts:login' %}">Login</a></p>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-container { max-width: 400px; margin: auto; padding: 20px; }
+.form-group { margin-bottom: 15px; }
+.error-text p { color: red; font-size: 0.9rem; margin: 2px 0; }
+.btn { padding: 8px 20px; border: none; border-radius: 5px; background: #0095f6; color: white; cursor: pointer; }
+</style>
+{% endblock %}

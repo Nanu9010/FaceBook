@@ -1,0 +1,104 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="feed-title">Latest Posts</h2>
+
+    <!-- User Search Form -->
+    <form method="GET" action="{% url 'posts:user_search' %}" class="user-search-form">
+        <input type="text" name="q" placeholder="Search users..." required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% for post in posts %}
+        <div class="feed-card">
+            <!-- Post Header -->
+            <div class="feed-header">
+                <div>
+                    <strong>{{ post.author.username }}</strong>
+                    <span class="timestamp">{{ post.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+            </div>
+
+            <!-- Post Content -->
+            <div class="feed-body">
+                <p>{{ post.content }}</p>
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="Post image" class="feed-image">
+                {% endif %}
+            </div>
+
+            <!-- Show comments -->
+            <div class="comments-section">
+                {% for comment in post.comments.all %}
+                    <p><strong>{{ comment.user.username }}</strong>: {{ comment.text }}</p>
+                {% empty %}
+                    <p class="no-comments">No comments yet.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Add comment -->
+            <form method="POST" action="{% url 'posts:add_comment' post.id %}" class="comment-form">
+                {% csrf_token %}
+                <input type="text" name="text" placeholder="Add a comment..." required>
+                <button type="submit">Post</button>
+            </form>
+
+            <!-- Post Actions -->
+            <div class="feed-actions">
+                <button class="btn-action"> ↗ Share</button>
+            </div>
+        </div>
+    {% empty %}
+        <p>No posts yet. <a href="{% url 'create_post' %}">Create one</a></p>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container { max-width: 700px; margin: auto; padding: 20px; }
+
+    .feed-title { margin-bottom: 20px; font-size: 1.5rem; font-weight: bold; }
+
+    /* User Search */
+    .user-search-form {
+        display: flex;
+        margin-bottom: 20px;
+    }
+    .user-search-form input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 20px 0 0 20px;
+        outline: none;
+    }
+    .user-search-form button {
+        padding: 8px 16px;
+        border: 1px solid #ccc;
+        border-left: none;
+        border-radius: 0 20px 20px 0;
+        background: black;
+        color: white;
+        cursor: pointer;
+    }
+
+    /* Feed Cards */
+    .feed-card { background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: space-between; }
+    .feed-header { display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 10px; }
+    .timestamp { font-size: 12px; color: gray; margin-left: 5px; }
+    .feed-body { flex: 1; }
+    .feed-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-top: 10px; }
+    .comments-section { margin: 10px 0; font-size: 14px; }
+    .comments-section p { margin: 5px 0; }
+    .no-comments { color: gray; font-size: 13px; }
+    .comment-form { display: flex; margin-top: 10px; }
+    .comment-form input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+    .comment-form button { margin-left: 8px; padding: 8px 15px; background: black; color: #fff; border: none; border-radius: 20px; cursor: pointer; }
+    .feed-actions { display: flex; justify-content: space-around; margin-top: 15px; }
+    .btn-action { background: none; border: none; cursor: pointer; font-size: 14px; color: black; padding: 5px 10px; transition: 0.2s; }
+    .btn-action:hover { color: #007bff; }
+</style>
+{% endblock %}

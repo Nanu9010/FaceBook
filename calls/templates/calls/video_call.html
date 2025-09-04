@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Video Call{% endblock %}
+
+{% block content %}
+<div class="call-container">
+    <h2>Video Call</h2>
+
+    <!-- Video Grid -->
+    <div class="video-wrapper">
+        <video id="localVideo" autoplay playsinline muted></video>
+        <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+
+    <!-- Receiver Info -->
+    <div class="receiver-info">
+        <span>{{ receiver.username }}</span>
+        {% if receiver.is_online %}
+            <span class="status online">● Online</span>
+        {% else %}
+            <span class="status offline">● Offline</span>
+        {% endif %}
+    </div>
+
+    <!-- Controls -->
+    <div class="call-controls">
+        <button id="startCall" class="btn btn-primary">📞 Start Call</button>
+        <button id="hangUp" class="btn btn-danger">❌ Hang Up</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let localStream;
+let peerConnection;
+let ws;
+
+const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+const localVideo = document.getElementById("localVideo");
+const remoteVideo = document.getElementById("remoteVideo");
+const startCallBtn = document.getElementById("startCall");
+const hangUpBtn = document.getElementById("hangUp");
+
+function initWebSocket() {
+    ws = new WebSocket(`ws://${window.location.host}/ws/call/{{ request.user.id }}/`);
+
+    ws.onmessage = async (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.offer) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            ws.send(JSON.stringify({ answer }));
+        }
+        else if (data.answer) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+        }
+        else if (data.candidate) {
+            try {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            } catch (err) {
+                console.error("Error adding ICE candidate:", err);
+            }
+        }
+    };
+}
+
+startCallBtn.addEventListener("click", async () => {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localVideo.srcObject = localStream;
+
+        peerConnection = new RTCPeerConnection(config);
+        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+        peerConnection.ontrack = (event) => {
+            remoteVideo.srcObject = event.streams[0];
+        };
+
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) ws.send(JSON.stringify({ candidate: event.candidate }));
+        };
+
+        initWebSocket();
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ offer }));
+        } else {
+            ws.onopen = () => ws.send(JSON.stringify({ offer }));
+        }
+
+    } catch (err) {
+        alert("Could not access camera/microphone.");
+        console.error(err);
+    }
+});
+
+hangUpBtn.addEventListener("click", () => {
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+    }
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+    }
+    remoteVideo.srcObject = null;
+    localVideo.srcObject = null;
+});
+</script>
+{% endblock %}
